@@ -6,29 +6,29 @@ import { motion } from 'framer-motion';
 /* ── Hardcoded recommended destinations (from guide) ── */
 const DESTINATIONS = [
   {
-    name: 'Paris',      country: 'France',       emoji: '🗼',
+    name: 'Paris',      country: 'France',
     costIndex: 3,       vibe: 'Romance & High Art',
-    accent: '210, 80%, 55%',  h: '210',
+    h: '210',
   },
   {
-    name: 'Kyoto',      country: 'Japan',        emoji: '⛩️',
+    name: 'Kyoto',      country: 'Japan',
     costIndex: 3,       vibe: 'Temples & Zen',
-    accent: '350, 75%, 58%',  h: '350',
+    h: '350',
   },
   {
-    name: 'Cape Town',  country: 'South Africa', emoji: '🌊',
+    name: 'Cape Town',  country: 'South Africa',
     costIndex: 2,       vibe: 'Coast & Mountains',
-    accent: '185, 80%, 45%',  h: '185',
+    h: '185',
   },
   {
-    name: 'Cartagena',  country: 'Colombia',     emoji: '🏛️',
+    name: 'Cartagena',  country: 'Colombia',
     costIndex: 1,       vibe: 'Color & Culture',
-    accent: '25, 90%, 55%',   h: '25',
+    h: '25',
   },
   {
-    name: 'Reykjavik',  country: 'Iceland',      emoji: '🌌',
+    name: 'Reykjavik',  country: 'Iceland',
     costIndex: 4,       vibe: 'Aurora & Wilderness',
-    accent: '265, 70%, 60%',  h: '265',
+    h: '265',
   },
 ];
 
@@ -189,8 +189,10 @@ export default function Dashboard() {
         {recentTrips.length === 0 ? (
           <div className="group relative overflow-hidden bg-surface border border-border rounded-2xl p-12 flex flex-col items-center justify-center min-h-[220px]">
             <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, hsla(38,92%,58%,0.04) 0%, transparent 70%)' }} />
-            <div className="w-14 h-14 rounded-full border border-border flex items-center justify-center bg-elevated mb-5 relative z-10 group-hover:border-sig/50 transition-colors duration-500">
-              <span className="text-2xl grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500">🌍</span>
+            <div className="w-14 h-14 rounded-full border border-border flex items-center justify-center bg-elevated mb-5 relative z-10 group-hover:border-sig/40 transition-colors duration-500">
+              <svg className="w-6 h-6 text-muted group-hover:text-sig transition-colors duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8" /><path d="M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
+              </svg>
             </div>
             <p className="text-secondary text-center mb-6 relative z-10 max-w-xs">
               Your travel history is a blank canvas — time to plan your first curated itinerary.
@@ -211,7 +213,11 @@ export default function Dashboard() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
                   {trip.cover_url
                     ? <img src={trip.cover_url} alt={trip.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    : <div className="w-full h-full flex items-center justify-center text-5xl">{trip.mood_emoji || '✈️'}</div>
+                    : <div className="w-full h-full flex items-center justify-center" style={{ background: `${trip.mood_color || 'var(--bg-elevated)'}22` }}>
+                        <span className="font-display font-extrabold text-7xl select-none pointer-events-none" style={{ color: `${trip.mood_color || 'var(--sig)'}40` }}>
+                          {trip.name?.[0] ?? 'T'}
+                        </span>
+                      </div>
                   }
                 </div>
                 <div className="p-5" style={{ borderLeft: `3px solid ${trip.mood_color || 'var(--sig)'}` }}>
@@ -246,7 +252,11 @@ export default function Dashboard() {
           >
             <div className="absolute inset-0 pointer-events-none"
                  style={{ background: `radial-gradient(ellipse at top left, hsla(${DESTINATIONS[0].h},60%,20%,0.7) 0%, var(--bg-surface) 70%)` }} />
-            <div className="absolute top-5 right-5 animate-float text-5xl pointer-events-none">{DESTINATIONS[0].emoji}</div>
+            {/* Typographic watermark — editorial, not emoji */}
+            <div className="absolute -top-4 -right-4 font-display font-extrabold leading-none select-none pointer-events-none"
+                 style={{ fontSize: '8rem', color: `hsla(${DESTINATIONS[0].h},70%,55%,0.1)`, lineHeight: 1 }}>
+              {DESTINATIONS[0].name[0]}
+            </div>
             <div className="relative z-10">
               <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-muted mb-1">{DESTINATIONS[0].country}</p>
               <h3 className="font-display font-extrabold text-3xl text-primary mb-1">{DESTINATIONS[0].name}</h3>
@@ -268,7 +278,10 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 pointer-events-none"
                    style={{ background: `radial-gradient(ellipse at top right, hsla(${dest.h},55%,18%,0.7) 0%, var(--bg-surface) 70%)` }} />
-              <div className="absolute top-4 right-4 text-3xl pointer-events-none group-hover:scale-110 transition-transform duration-300">{dest.emoji}</div>
+              <div className="absolute -top-2 -right-2 font-display font-extrabold leading-none select-none pointer-events-none"
+                   style={{ fontSize: '5rem', color: `hsla(${dest.h},70%,55%,0.1)`, lineHeight: 1 }}>
+                {dest.name[0]}
+              </div>
               <div className="relative z-10">
                 <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted mb-0.5">{dest.country}</p>
                 <h3 className="font-display font-bold text-lg text-primary">{dest.name}</h3>
@@ -290,7 +303,10 @@ export default function Dashboard() {
             >
               <div className="absolute inset-0 pointer-events-none"
                    style={{ background: `radial-gradient(ellipse at bottom left, hsla(${dest.h},55%,18%,0.7) 0%, var(--bg-surface) 70%)` }} />
-              <div className="absolute top-4 right-4 text-3xl pointer-events-none group-hover:scale-110 transition-transform duration-300">{dest.emoji}</div>
+              <div className="absolute -bottom-2 -right-2 font-display font-extrabold leading-none select-none pointer-events-none"
+                   style={{ fontSize: '5rem', color: `hsla(${dest.h},70%,55%,0.1)`, lineHeight: 1 }}>
+                {dest.name[0]}
+              </div>
               <div className="relative z-10">
                 <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted mb-0.5">{dest.country}</p>
                 <h3 className="font-display font-bold text-lg text-primary">{dest.name}</h3>
@@ -302,11 +318,15 @@ export default function Dashboard() {
           {/* View All — sixth slot */}
           <Link
             to="/explore"
-            className="relative overflow-hidden rounded-2xl border border-dashed border-border bg-transparent cursor-pointer group min-h-[140px] flex flex-col items-center justify-center p-5 hover:border-sig/40 transition-colors duration-300"
+            className="relative overflow-hidden rounded-2xl border border-dashed border-border bg-transparent cursor-pointer group min-h-[140px] flex flex-col items-center justify-center gap-3 p-5 hover:border-sig/40 transition-all duration-300"
           >
-            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">🌐</span>
+            <svg className="w-7 h-7 text-muted group-hover:text-sig transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8" /><path d="M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
+            </svg>
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-muted group-hover:text-sig transition-colors">Explore More</span>
-            <span className="text-sig mt-1 text-lg">→</span>
+            <svg className="w-4 h-4 text-sig opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
           </Link>
 
         </div>

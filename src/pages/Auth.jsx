@@ -147,7 +147,9 @@ export default function Auth() {
               className="mb-8"
             >
               <h1 className="font-display text-4xl font-extrabold text-primary leading-tight">
-                {mode === 'login' ? 'Welcome\nback.' : 'Start your\njourney.'}
+                {mode === 'login'
+                  ? <>Welcome<br />back.</>
+                  : <>Start your<br />journey.</>}
               </h1>
               <p className="text-secondary mt-2">
                 {mode === 'login'
@@ -234,10 +236,14 @@ export default function Auth() {
               <motion.p
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-sm font-medium"
+                className="flex items-center gap-2 text-sm font-medium"
                 style={{ color: 'var(--danger)' }}
               >
-                ⚠ {error}
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                {error}
               </motion.p>
             )}
 
