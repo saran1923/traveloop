@@ -1,337 +1,378 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { motion } from 'framer-motion';
 
-/* ── Hardcoded recommended destinations (from guide) ── */
-const DESTINATIONS = [
+const SECTIONS = [
   {
-    name: 'Paris',      country: 'France',
-    costIndex: 3,       vibe: 'Romance & High Art',
-    h: '210',
+    id: 0,
+    type: 'hero',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=85',
+    title: 'Where Will\nYou Go\nNext?',
+    sub: 'AI-powered travel planning for the modern explorer',
   },
   {
-    name: 'Kyoto',      country: 'Japan',
-    costIndex: 3,       vibe: 'Temples & Zen',
-    h: '350',
+    id: 1,
+    type: 'dest',
+    city: 'Santorini',
+    country: 'Greece',
+    vibe: 'Aegean paradise of white domes and cerulean sea',
+    season: 'Apr – Oct',
+    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1920&q=85',
+    align: 'left',
+    num: '01',
   },
   {
-    name: 'Cape Town',  country: 'South Africa',
-    costIndex: 2,       vibe: 'Coast & Mountains',
-    h: '185',
+    id: 2,
+    type: 'dest',
+    city: 'Kyoto',
+    country: 'Japan',
+    vibe: 'Ancient temples wrapped in cherry blossom and silence',
+    season: 'Mar – May',
+    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1920&q=85',
+    align: 'right',
+    num: '02',
   },
   {
-    name: 'Cartagena',  country: 'Colombia',
-    costIndex: 1,       vibe: 'Color & Culture',
-    h: '25',
+    id: 3,
+    type: 'dest',
+    city: 'Reykjavik',
+    country: 'Iceland',
+    vibe: 'Northern lights dancing over volcanic wilderness',
+    season: 'Sep – Mar',
+    image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1920&q=85',
+    align: 'center',
+    num: '03',
   },
   {
-    name: 'Reykjavik',  country: 'Iceland',
-    costIndex: 4,       vibe: 'Aurora & Wilderness',
-    h: '265',
+    id: 4,
+    type: 'dest',
+    city: 'Marrakech',
+    country: 'Morocco',
+    vibe: 'Labyrinthine medinas alive with color and spice',
+    season: 'Oct – Apr',
+    image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1920&q=85',
+    align: 'left',
+    num: '04',
+  },
+  {
+    id: 5,
+    type: 'cta',
+    image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1920&q=85',
   },
 ];
 
-const TICKER = [
-  'Paris', 'Kyoto', 'Cape Town', 'Cartagena', 'Reykjavik',
-  'Santorini', 'Marrakech', 'Tokyo', 'Bali', 'Prague',
-  'Buenos Aires', 'Petra', 'Lisbon', 'Dubrovnik',
-];
-
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 24 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
-};
-
-function CostDots({ count }) {
-  return (
-    <span className="flex gap-0.5 items-center">
-      {[1, 2, 3, 4].map(i => (
-        <span
-          key={i}
-          className="text-xs font-black"
-          style={{ color: i <= count ? 'var(--sig)' : 'hsla(38,92%,58%,0.2)' }}
-        >₹</span>
-      ))}
-    </span>
-  );
-}
-
-export default function Dashboard() {
-  const [profile,     setProfile]     = useState(null);
-  const [recentTrips, setRecentTrips] = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [greeting,    setGreeting]    = useState('');
+/* ── Section component ── */
+function FullSection({ s, onVisible }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { amount: 0.5 });
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12)      setGreeting('Good morning');
-    else if (hour < 18) setGreeting('Good afternoon');
-    else                setGreeting('Good evening');
-  }, []);
+    if (inView) onVisible(s.id);
+  }, [inView, s.id, onVisible]);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (p) setProfile(p);
-        const { data: t } = await supabase.from('trips').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3);
-        if (t) setRecentTrips(t);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const textVariants = {
+    hidden: { opacity: 0, y: 50 },
+    show:   { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } },
+  };
+  const lineVariants = {
+    hidden: { scaleX: 0 },
+    show:   { scaleX: 1, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 } },
+  };
 
-  if (loading) {
+  /* ── HERO ── */
+  if (s.type === 'hero') {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-12 w-2/3 bg-surface rounded-lg" />
-        <div className="h-4 w-40 bg-surface rounded" />
-        <div className="h-72 bg-surface rounded-2xl border border-border" />
-        <div className="grid grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-56 bg-surface rounded-xl border border-border" />)}
+      <section
+        ref={ref}
+        className="relative overflow-hidden flex items-end"
+        style={{ height: '100vh', scrollSnapAlign: 'start' }}
+      >
+        <motion.img
+          src={s.image} alt="hero"
+          className="absolute inset-0 w-full h-full object-cover"
+          initial={{ scale: 1.1 }}
+          animate={inView ? { scale: 1 } : { scale: 1.1 }}
+          transition={{ duration: 1.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        />
+        {/* Layers */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+
+        {/* Orange accent line top */}
+        <motion.div
+          className="absolute top-0 left-0 h-[3px] origin-left"
+          style={{ background: 'var(--sig)', width: '100%' }}
+          variants={lineVariants}
+          initial="hidden"
+          animate={inView ? 'show' : 'hidden'}
+        />
+
+        <div className="relative z-10 w-full px-8 md:px-20 pb-20 md:pb-28">
+          <motion.p
+            variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { duration: 0.6 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="text-xs font-semibold uppercase tracking-[0.4em] mb-5"
+            style={{ color: 'var(--sig)' }}
+          >
+            Traveloop — AI Travel Planner
+          </motion.p>
+
+          <motion.h1
+            variants={textVariants} initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="font-display font-bold text-white leading-[1.0]"
+            style={{ fontSize: 'clamp(3.5rem, 9vw, 8rem)', whiteSpace: 'pre-line' }}
+          >
+            {s.title}
+          </motion.h1>
+
+          <motion.p
+            variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.8, delay: 0.4 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="mt-5 text-lg max-w-md"
+            style={{ color: 'rgba(255,255,255,0.55)' }}
+          >
+            {s.sub}
+          </motion.p>
+
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.55 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="mt-8 flex gap-4 flex-wrap"
+          >
+            <Link
+              to="/trips/new"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 hover:scale-105"
+              style={{ background: 'var(--sig)', color: '#000', boxShadow: 'var(--glow-md)' }}
+            >
+              Begin Planning
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </Link>
+            <Link
+              to="/explore"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base transition-all duration-200 border hover:border-sig/50"
+              style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', borderColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)' }}
+            >
+              Explore Destinations
+            </Link>
+          </motion.div>
         </div>
-      </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 right-10 z-10 flex flex-col items-center gap-2">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.4)', writingMode: 'vertical-rl' }}>Scroll</span>
+          <motion.div
+            className="w-px h-12 origin-top"
+            style={{ background: 'linear-gradient(to bottom, var(--sig), transparent)' }}
+            animate={{ scaleY: [0, 1, 0], opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+      </section>
     );
   }
 
-  const name = profile?.name || 'Explorer';
+  /* ── DESTINATION ── */
+  if (s.type === 'dest') {
+    const isLeft   = s.align === 'left';
+    const isCenter = s.align === 'center';
 
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-10">
-
-      {/* ── HEADER ── */}
-      <motion.header variants={item} className="flex flex-col gap-1">
-        <p className="text-xs font-bold uppercase tracking-[0.35em] text-sig mb-1">{greeting}</p>
-        <h1 className="text-4xl md:text-5xl font-display font-extrabold text-primary leading-tight">
-          Welcome back, {name}
-        </h1>
-        <p className="text-secondary mt-1">Where will you wander next?</p>
-      </motion.header>
-
-      {/* ── MARQUEE TICKER ── */}
-      <motion.div variants={item} className="overflow-hidden border-y border-border py-3 -mx-4 md:-mx-8 px-0">
-        <div className="flex gap-0 animate-marquee whitespace-nowrap w-max">
-          {[...TICKER, ...TICKER].map((city, i) => (
-            <span key={i} className="inline-flex items-center gap-4 px-6">
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-muted">{city}</span>
-              <span className="text-sig text-xs">✦</span>
-            </span>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── HERO STRIP — "Plan Your Expedition" ── */}
-      <motion.section
-        variants={item}
-        className="relative group overflow-hidden rounded-2xl border border-border bg-surface min-h-[300px] flex items-end p-8 md:p-12"
+    return (
+      <section
+        ref={ref}
+        className="relative overflow-hidden flex items-end"
+        style={{ height: '100vh', scrollSnapAlign: 'start' }}
       >
-        {/* Ambient amber orb */}
-        <div
-          className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none animate-glow-pulse"
-          style={{ background: 'radial-gradient(circle, hsla(38,92%,58%,0.13) 0%, transparent 70%)' }}
+        <motion.img
+          src={s.image} alt={s.city}
+          className="absolute inset-0 w-full h-full object-cover"
+          initial={{ scale: 1.08 }}
+          animate={inView ? { scale: 1 } : { scale: 1.08 }}
+          transition={{ duration: 1.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
-        {/* Diagonal sheen */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" />
+        {!isCenter && (
+          <div className={`absolute inset-0 bg-gradient-to-${isLeft ? 'r' : 'l'} from-black/70 to-transparent`} />
+        )}
+
+        {/* Section number — top right */}
         <div
-          className="absolute top-0 right-0 w-2/5 h-full -skew-x-6 transform translate-x-16 group-hover:translate-x-10 transition-all duration-700"
-          style={{ background: 'linear-gradient(135deg, hsla(38,92%,58%,0.04) 0%, transparent 80%)' }}
-        />
-        {/* Eyebrow label */}
-        <div className="absolute top-8 left-8 md:left-12 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-sig animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-[0.35em] text-sig">Next Expedition</span>
+          className="absolute top-24 right-10 font-display font-bold select-none pointer-events-none"
+          style={{ fontSize: '9rem', color: 'rgba(255,255,255,0.04)', lineHeight: 1 }}
+        >
+          {s.num}
         </div>
 
-        {/* Main content */}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end gap-8 w-full">
-          <div className="flex-1">
-            <h2 className="font-display font-extrabold text-primary leading-[1.05]"
-                style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>
-              Where does<br />
-              <span style={{ color: 'var(--sig)' }}>your story</span><br />
-              begin?
-            </h2>
-          </div>
+        {/* Text block */}
+        <div
+          className={`relative z-10 w-full px-8 md:px-20 pb-20 md:pb-28 ${
+            isCenter ? 'flex flex-col items-center text-center' :
+            isLeft   ? '' : 'flex flex-col items-end text-right'
+          }`}
+        >
+          <motion.div
+            className="h-0.5 mb-5 origin-left"
+            style={{
+              background: 'var(--sig)',
+              width: 48,
+              transformOrigin: isCenter ? 'center' : isLeft ? 'left' : 'right',
+            }}
+            variants={lineVariants}
+            initial="hidden"
+            animate={inView ? 'show' : 'hidden'}
+          />
+
+          <motion.p
+            variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.5, delay: 0.1 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="text-xs font-semibold uppercase tracking-[0.4em] mb-3"
+            style={{ color: 'var(--sig)' }}
+          >
+            {s.country} — {s.season}
+          </motion.p>
+
+          <motion.h2
+            variants={textVariants} initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="font-display font-bold italic text-white leading-none"
+            style={{ fontSize: 'clamp(4rem, 10vw, 9rem)' }}
+          >
+            {s.city}
+          </motion.h2>
+
+          <motion.p
+            variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.8, delay: 0.5 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="mt-4 text-base max-w-sm"
+            style={{ color: 'rgba(255,255,255,0.5)' }}
+          >
+            {s.vibe}
+          </motion.p>
+
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.65 } } }}
+            initial="hidden" animate={inView ? 'show' : 'hidden'}
+            className="mt-7"
+          >
+            <Link
+              to="/trips/new"
+              className="inline-flex items-center gap-3 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 border hover:scale-105"
+              style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)', color: '#fff' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--sig)'; e.currentTarget.style.color = '#000'; e.currentTarget.style.borderColor = 'var(--sig)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+            >
+              Plan {s.city}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  /* ── FINAL CTA ── */
+  return (
+    <section
+      ref={ref}
+      className="relative overflow-hidden flex items-center justify-center"
+      style={{ height: '100vh', scrollSnapAlign: 'start' }}
+    >
+      <img src={s.image} alt="cta" className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-black/80" />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, hsla(22,92%,52%,0.12) 0%, transparent 65%)' }} />
+
+      <div className="relative z-10 text-center max-w-3xl px-6">
+        <motion.p
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+          initial="hidden" animate={inView ? 'show' : 'hidden'}
+          transition={{ duration: 0.5 }}
+          className="text-xs font-semibold uppercase tracking-[0.4em] mb-6"
+          style={{ color: 'var(--sig)' }}
+        >Your Journey Awaits</motion.p>
+
+        <motion.h2
+          variants={textVariants} initial="hidden" animate={inView ? 'show' : 'hidden'}
+          className="font-display font-bold italic text-white leading-tight"
+          style={{ fontSize: 'clamp(3rem, 7vw, 6rem)' }}
+        >
+          Every great<br />trip starts with<br />
+          <span style={{ color: 'var(--sig)' }}>a single plan.</span>
+        </motion.h2>
+
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.5 } } }}
+          initial="hidden" animate={inView ? 'show' : 'hidden'}
+          className="flex flex-col sm:flex-row gap-4 justify-center mt-10"
+        >
           <Link
             to="/trips/new"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-sig text-black font-display font-bold text-base rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shrink-0"
-            style={{ boxShadow: 'var(--glow-sm)' }}
+            className="px-10 py-4 rounded-xl font-bold text-base transition-all duration-200 hover:scale-105"
+            style={{ background: 'var(--sig)', color: '#000', boxShadow: 'var(--glow-lg)' }}
           >
-            Begin Planning
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            Start Planning Free
           </Link>
-        </div>
-      </motion.section>
-
-      {/* ── RECENT JOURNEYS ── */}
-      <motion.section variants={item}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-display font-bold flex items-center gap-2">
-            <span className="text-sig">●</span> Recent Journeys
-          </h2>
-          <Link to="/trips" className="text-xs font-bold uppercase tracking-widest text-muted hover:text-sig transition-colors">
-            View All →
-          </Link>
-        </div>
-
-        {recentTrips.length === 0 ? (
-          <div className="group relative overflow-hidden bg-surface border border-border rounded-2xl p-12 flex flex-col items-center justify-center min-h-[220px]">
-            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, hsla(38,92%,58%,0.04) 0%, transparent 70%)' }} />
-            <div className="w-14 h-14 rounded-full border border-border flex items-center justify-center bg-elevated mb-5 relative z-10 group-hover:border-sig/40 transition-colors duration-500">
-              <svg className="w-6 h-6 text-muted group-hover:text-sig transition-colors duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8" /><path d="M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
-              </svg>
-            </div>
-            <p className="text-secondary text-center mb-6 relative z-10 max-w-xs">
-              Your travel history is a blank canvas — time to plan your first curated itinerary.
-            </p>
-            <Link to="/trips/new" className="relative z-10 px-6 py-2 border border-border text-sm font-bold uppercase tracking-widest rounded-lg hover:border-sig hover:text-sig transition-all duration-300">
-              Create Trip
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentTrips.map(trip => (
-              <Link
-                to={`/trips/${trip.id}/build`}
-                key={trip.id}
-                className="group bg-surface border border-border rounded-xl overflow-hidden card-glow block"
-              >
-                <div className="h-40 bg-elevated relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
-                  {trip.cover_url
-                    ? <img src={trip.cover_url} alt={trip.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    : <div className="w-full h-full flex items-center justify-center" style={{ background: `${trip.mood_color || 'var(--bg-elevated)'}22` }}>
-                        <span className="font-display font-extrabold text-7xl select-none pointer-events-none" style={{ color: `${trip.mood_color || 'var(--sig)'}40` }}>
-                          {trip.name?.[0] ?? 'T'}
-                        </span>
-                      </div>
-                  }
-                </div>
-                <div className="p-5" style={{ borderLeft: `3px solid ${trip.mood_color || 'var(--sig)'}` }}>
-                  <h3 className="font-display font-bold text-lg group-hover:text-sig transition-colors">{trip.name}</h3>
-                  <p className="text-xs text-muted mt-1 uppercase tracking-widest">
-                    {trip.start_date ? new Date(trip.start_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : 'Dates TBD'}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </motion.section>
-
-      {/* ── EXPLORE THE WORLD — Bento destinations ── */}
-      <motion.section variants={item}>
-        <div className="flex items-baseline gap-4 mb-6">
-          <h2 className="text-xl font-display font-bold">✦ Explore the World</h2>
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-muted">Curated Destinations</span>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4" style={{ gridTemplateRows: 'auto auto auto' }}>
-
-          {/* Paris — FEATURED (spans 2 rows on md) */}
-          <motion.div
-            whileHover={{ y: -4, scale: 1.01 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="col-span-2 md:col-span-1 md:row-span-2 relative overflow-hidden rounded-2xl border border-border bg-surface cursor-pointer group min-h-[220px] md:min-h-[360px] flex flex-col justify-end p-6"
-            style={{ boxShadow: 'none', transition: 'box-shadow 0.3s ease' }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 40px hsla(${DESTINATIONS[0].h},70%,50%,0.2), 0 8px 40px rgba(0,0,0,0.4)`}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-          >
-            <div className="absolute inset-0 pointer-events-none"
-                 style={{ background: `radial-gradient(ellipse at top left, hsla(${DESTINATIONS[0].h},60%,20%,0.7) 0%, var(--bg-surface) 70%)` }} />
-            {/* Typographic watermark — editorial, not emoji */}
-            <div className="absolute -top-4 -right-4 font-display font-extrabold leading-none select-none pointer-events-none"
-                 style={{ fontSize: '8rem', color: `hsla(${DESTINATIONS[0].h},70%,55%,0.1)`, lineHeight: 1 }}>
-              {DESTINATIONS[0].name[0]}
-            </div>
-            <div className="relative z-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-muted mb-1">{DESTINATIONS[0].country}</p>
-              <h3 className="font-display font-extrabold text-3xl text-primary mb-1">{DESTINATIONS[0].name}</h3>
-              <p className="text-secondary text-sm italic mb-3">{DESTINATIONS[0].vibe}</p>
-              <CostDots count={DESTINATIONS[0].costIndex} />
-            </div>
-          </motion.div>
-
-          {/* Kyoto & Cape Town — Right column */}
-          {DESTINATIONS.slice(1, 3).map(dest => (
-            <motion.div
-              key={dest.name}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-surface cursor-pointer group min-h-[168px] flex flex-col justify-end p-5"
-              style={{ boxShadow: 'none', transition: 'box-shadow 0.3s ease' }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 30px hsla(${dest.h},70%,50%,0.18), 0 6px 30px rgba(0,0,0,0.4)`}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-            >
-              <div className="absolute inset-0 pointer-events-none"
-                   style={{ background: `radial-gradient(ellipse at top right, hsla(${dest.h},55%,18%,0.7) 0%, var(--bg-surface) 70%)` }} />
-              <div className="absolute -top-2 -right-2 font-display font-extrabold leading-none select-none pointer-events-none"
-                   style={{ fontSize: '5rem', color: `hsla(${dest.h},70%,55%,0.1)`, lineHeight: 1 }}>
-                {dest.name[0]}
-              </div>
-              <div className="relative z-10">
-                <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted mb-0.5">{dest.country}</p>
-                <h3 className="font-display font-bold text-lg text-primary">{dest.name}</h3>
-                <CostDots count={dest.costIndex} />
-              </div>
-            </motion.div>
-          ))}
-
-          {/* Cartagena & Reykjavik — Bottom row */}
-          {DESTINATIONS.slice(3, 5).map(dest => (
-            <motion.div
-              key={dest.name}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-surface cursor-pointer group min-h-[140px] flex flex-col justify-end p-5"
-              style={{ boxShadow: 'none', transition: 'box-shadow 0.3s ease' }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 30px hsla(${dest.h},70%,50%,0.18), 0 6px 30px rgba(0,0,0,0.4)`}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-            >
-              <div className="absolute inset-0 pointer-events-none"
-                   style={{ background: `radial-gradient(ellipse at bottom left, hsla(${dest.h},55%,18%,0.7) 0%, var(--bg-surface) 70%)` }} />
-              <div className="absolute -bottom-2 -right-2 font-display font-extrabold leading-none select-none pointer-events-none"
-                   style={{ fontSize: '5rem', color: `hsla(${dest.h},70%,55%,0.1)`, lineHeight: 1 }}>
-                {dest.name[0]}
-              </div>
-              <div className="relative z-10">
-                <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted mb-0.5">{dest.country}</p>
-                <h3 className="font-display font-bold text-lg text-primary">{dest.name}</h3>
-                <CostDots count={dest.costIndex} />
-              </div>
-            </motion.div>
-          ))}
-
-          {/* View All — sixth slot */}
           <Link
-            to="/explore"
-            className="relative overflow-hidden rounded-2xl border border-dashed border-border bg-transparent cursor-pointer group min-h-[140px] flex flex-col items-center justify-center gap-3 p-5 hover:border-sig/40 transition-all duration-300"
+            to="/trips"
+            className="px-10 py-4 rounded-xl font-semibold text-base border transition-all duration-200 hover:border-sig/50"
+            style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(12px)' }}
           >
-            <svg className="w-7 h-7 text-muted group-hover:text-sig transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8" /><path d="M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
-            </svg>
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-muted group-hover:text-sig transition-colors">Explore More</span>
-            <svg className="w-4 h-4 text-sig opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            View My Trips
           </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
+/* ── Main Dashboard ── */
+export default function Dashboard() {
+  const [activeSection, setActiveSection] = useState(0);
+  const mainRef = useRef(null);
+
+  const scrollTo = (id) => {
+    const el = document.getElementById(`section-${id}`);
+    el?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7 }}
+    >
+      {SECTIONS.map(s => (
+        <div key={s.id} id={`section-${s.id}`}>
+          <FullSection s={s} onVisible={setActiveSection} />
         </div>
-      </motion.section>
+      ))}
 
+      {/* ── Dot Navigation ── */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3 hidden md:flex">
+        {SECTIONS.map(s => (
+          <button
+            key={s.id}
+            onClick={() => scrollTo(s.id)}
+            className="rounded-full transition-all duration-400"
+            style={{
+              width:   activeSection === s.id ? 10 : 6,
+              height:  activeSection === s.id ? 10 : 6,
+              background: activeSection === s.id ? 'var(--sig)' : 'rgba(255,255,255,0.25)',
+              boxShadow: activeSection === s.id ? 'var(--glow-xs)' : 'none',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── Section counter ── */}
+      <div
+        className="fixed bottom-8 left-8 z-50 hidden md:flex items-center gap-2"
+        style={{ color: 'rgba(255,255,255,0.35)' }}
+      >
+        <span className="text-lg font-display font-bold" style={{ color: activeSection > 0 ? 'var(--sig)' : 'rgba(255,255,255,0.35)' }}>
+          {String(activeSection + 1).padStart(2, '0')}
+        </span>
+        <div className="w-10 h-px" style={{ background: 'rgba(255,255,255,0.2)' }} />
+        <span className="text-sm">{String(SECTIONS.length).padStart(2, '0')}</span>
+      </div>
     </motion.div>
   );
 }

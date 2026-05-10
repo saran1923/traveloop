@@ -61,7 +61,9 @@ export default function AICopilot({ isOpen, onClose }) {
             <div className="p-6 border-b border-border flex items-center justify-between bg-surface">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-sig flex items-center justify-center shadow-sig-glow">
-                  <span className="text-black text-xl">✨</span>
+                  <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" stroke="none" />
+                  </svg>
                 </div>
                 <div>
                   <h2 className="font-display font-bold text-primary">AI Copilot</h2>
