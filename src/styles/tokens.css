@@ -4,30 +4,37 @@
 
 :root {
   /* Backgrounds */
-  --bg-base: hsl(220, 18%, 7%);          /* near-black blue-charcoal */
-  --bg-surface: hsl(220, 14%, 11%);      /* card surface */
-  --bg-elevated: hsl(220, 12%, 15%);     /* modal, dropdown */
+  --bg-base: hsl(220, 18%, 7%);
+  --bg-surface: hsl(220, 14%, 11%);
+  --bg-elevated: hsl(220, 12%, 15%);
 
-  /* The ONE signature color — warm amber */
-  --sig: hsl(38, 92%, 58%);             /* #F5A623 equivalent */
+  /* Signature — warm amber */
+  --sig: hsl(38, 92%, 58%);
   --sig-dim: hsl(38, 60%, 40%);
   --sig-glow: hsla(38, 92%, 58%, 0.15);
+  --sig-rgb: 242, 166, 35;
+
+  /* Glow Elevation System (dark mode uses glow, not shadow) */
+  --glow-xs:  0 0 12px rgba(242, 166, 35, 0.08);
+  --glow-sm:  0 0 20px rgba(242, 166, 35, 0.12), 0 4px 24px rgba(0,0,0,0.3);
+  --glow-md:  0 0 30px rgba(242, 166, 35, 0.2),  0 8px 40px rgba(0,0,0,0.4);
+  --glow-lg:  0 0 50px rgba(242, 166, 35, 0.28), 0 16px 60px rgba(0,0,0,0.5);
 
   /* Text */
-  --text-primary: hsl(220, 10%, 92%);
+  --text-primary:   hsl(220, 10%, 92%);
   --text-secondary: hsl(220, 8%, 55%);
-  --text-muted: hsl(220, 6%, 35%);
+  --text-muted:     hsl(220, 6%, 35%);
 
   /* Borders */
-  --border: hsl(220, 10%, 18%);
+  --border:        hsl(220, 10%, 18%);
   --border-active: hsl(38, 92%, 58%);
 
-  /* Functional colors */
+  /* Functional */
   --success: hsl(145, 60%, 45%);
-  --danger: hsl(4, 80%, 58%);
-  --info: hsl(210, 70%, 55%);
+  --danger:  hsl(4, 80%, 58%);
+  --info:    hsl(210, 70%, 55%);
 
-  /* Typography Scale — Perfect Fourth */
+  /* Typography Scale — Perfect Fourth (1.333) */
   --text-xs:   0.563rem;
   --text-sm:   0.75rem;
   --text-base: 1rem;
@@ -38,18 +45,30 @@
 
   /* Spacing — 8pt */
   --sp-1: 0.5rem; --sp-2: 1rem; --sp-3: 1.5rem;
-  --sp-4: 2rem; --sp-6: 3rem; --sp-8: 4rem;
+  --sp-4: 2rem;   --sp-6: 3rem; --sp-8: 4rem;
 
   /* Motion */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-luxury: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @layer base {
   body {
     @apply bg-[var(--bg-base)] text-[var(--text-primary)] font-body antialiased;
   }
-  
+
+  /* Global noise texture overlay — removes clinical sterility */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold;
   }
